@@ -26,7 +26,7 @@
           "results": [
             {
               "ctx_id": "acdp://registry.example.com/550e8400-e29b-41d4-a716-446655440000",
-              "lineage_id": "lin:sha256:b14ccd2a8b34530309255db68c151a10689b6a82feb30aff9222d54fdd871720",
+              "lineage_id": "lin:sha256:ca770dc5d7c41109753bd3d045c2b7bd4cf687ab9cd2552ff17a37bcecbd0810",
               "agent_id": "did:web:agents.example.com:test",
               "title": "Sample",
               "type": "data_snapshot",
@@ -49,7 +49,7 @@
           "results": [
             {
               "ctx_id": "acdp://registry.example.com/550e8400-e29b-41d4-a716-446655440000",
-              "lineage_id": "lin:sha256:b14ccd2a8b34530309255db68c151a10689b6a82feb30aff9222d54fdd871720",
+              "lineage_id": "lin:sha256:ca770dc5d7c41109753bd3d045c2b7bd4cf687ab9cd2552ff17a37bcecbd0810",
               "agent_id": "did:web:agents.example.com:test",
               "title": "Sample",
               "type": "data_snapshot",

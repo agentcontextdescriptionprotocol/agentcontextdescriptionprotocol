@@ -2,6 +2,26 @@
 
 All notable changes to ACDP are recorded here. ACDP follows the versioning policy in [VERSIONING.md](VERSIONING.md).
 
+## v0.1.0 — RFC-ACDP-0002 §6.3: disambiguate embedded.content_hash from the DataRef-root content_hash — 2026-09-05
+
+**Documentation/consistency fix, no wire change.** No body field, schema `$id`, JCS rule, content-hash computation, or signature semantic changed.
+
+- **The gap.** Commit `390f2d3` (2026-07-05 errata) added `embedded.content_hash` to `acdp-data-ref.schema.json` and to RFC-ACDP-0002 §6.6 check 8 and §6.7's openness map, but never added a corresponding row to §6.3's field table for `embedded` — which still listed only `encoding` and `content` — and its disambiguation sentence referred to "`content_hash`... present on an embedded data reference" without naming `embedded.content_hash` explicitly, leaving it readable as the DataRef-root `content_hash` (§6.1), a real, distinct, independent field with overlapping "computed over decoded bytes" wording. This closes that residual prose/fixture-comment gap; the schema fix itself already shipped in `390f2d3`.
+- **The fix.** RFC-ACDP-0002 §6.3's field table gains a `content_hash` row, and the disambiguation sentence now names `embedded.content_hash` explicitly and cross-references §6.1: both fields are independent and optional and MAY be present on the same `DataRef` simultaneously — the root `content_hash` (§6.1) is for consumer post-fetch integrity verification, `embedded.content_hash` specifically feeds the publish-time check 8 comparison.
+- `schemas/conformance/schema-003-embedded-extra-field.json`'s `rationale` now says `embedded` is closed over `encoding`, `content`, and optional `content_hash` (was: "encoding and content"), and its `description`'s stale `acdp-data-ref.schema.json line 85` citation is replaced with a name-based reference to the `embedded` sub-schema instead of a line number, since the exact line has already gone stale twice across two errata passes. The fixture's actual negative test case (unrecognized key `checksum`) is unchanged.
+- `docs/integration-guide.md`'s two ambiguous "`data_ref.content_hash`" references (the `StrictV010` verification-profile step list and the `data_ref_hash_mismatch` row of the common-errors table) are reworded to say `embedded.content_hash` and cross-reference RFC-ACDP-0002 §6.1/§6.3, matching the RFC fix.
+- `schemas/json/acdp-data-ref.schema.json`'s `embedded.content_hash` now uses `"$ref": "https://schemas.acdp.io/v0.1.0/acdp-common.schema.json#/$defs/content_hash"` instead of its own inline `{"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"}`, for convention parity with the DataRef-root `content_hash` field, which already uses this `$ref`. This is a pure internal-reference-style refactor: the `$defs/content_hash` pattern (`^sha256:[0-9a-f]{64}$`) and the inline pattern it replaces (`^sha256:[a-f0-9]{64}$`) match the identical character class, just written in a different order, so validation behavior is byte-identical before and after.
+- Closes the residual documentation half of GitHub issue #52; the schema fix landed already in commit `390f2d3` (2026-07-05).
+
+## v0.1.0 — finish the stale-digest sweep the 2026-07-05 errata claimed was complete — 2026-09-05
+
+**Illustrative-example correction, no wire change.** No body field, schema `$id`, JCS rule, content-hash, or signature semantic changed.
+
+- The `## v0.3.0 — Errata from the second implementation — 2026-07-05` entry above fixed the impossible `pub-007`/RFC-ACDP-0003 §4 example pairing of illustrative `ctx_id acdp://registry.example.com/550e8400-e29b-41d4-a716-446655440000` with the disproven `lineage_id lin:sha256:b14ccd2a…`, but that sweep was incomplete: four other copies of the same illustrative pairing survived elsewhere in the tree, still carrying the disproven digest — `rfcs/RFC-ACDP-0005-discovery.md`'s §2.2 search-response example, both illustrative results in `schemas/conformance/vis-003-search-response-key.json`, and `schemas/json/acdp-common.schema.json`'s `lineage_id` schema annotation `examples[0]`.
+- GitHub issue #53 (filed by `acdp-verifier-py` during SPEC-15 triage) surfaced these leftover copies. All four are now corrected to the same independently-verified-correct derivation the 2026-07-05 entry already established, `lin:sha256:ca770dc5d7c41109753bd3d045c2b7bd4cf687ab9cd2552ff17a37bcecbd0810` (`sha256(utf8(ctx_id))` per RFC-ACDP-0001 §5.6/§5.11, re-verified byte-identical via both `python3 hashlib` and `shasum -a 256`).
+- `vis-003`'s two edited sites are inert illustrative context only — that fixture's actual assertions check field-name conformance (`matches` vs `results`) and diagnostics, never the `lineage_id` value itself — so this is a pure value substitution with no behavioral-assertion impact.
+- `scripts/check-consistency.py` gains a new narrowly-scoped guard (`check_no_disproven_digest`) that fails the `make consistency` gate if the full disproven digest reappears anywhere under `rfcs/`, `schemas/`, `examples/`, or `docs/`, so a partial-sweep erratum like this one cannot silently recur.
+
 ## v0.5.0 — README: canonical posture paragraph regains the 0.5.0 Draft line — 2026-09-05
 
 **Doc-only fix, no wire change.** No body field, schema `$id`, JCS rule, content-hash, or signature semantic changed.
