@@ -2,6 +2,15 @@
 
 All notable changes to ACDP are recorded here. ACDP follows the versioning policy in [VERSIONING.md](VERSIONING.md).
 
+## v0.1.0 — finish the stale-digest sweep the 2026-07-05 errata claimed was complete — 2026-09-05
+
+**Illustrative-example correction, no wire change.** No body field, schema `$id`, JCS rule, content-hash, or signature semantic changed.
+
+- The `## v0.3.0 — Errata from the second implementation — 2026-07-05` entry above fixed the impossible `pub-007`/RFC-ACDP-0003 §4 example pairing of illustrative `ctx_id acdp://registry.example.com/550e8400-e29b-41d4-a716-446655440000` with the disproven `lineage_id lin:sha256:b14ccd2a…`, but that sweep was incomplete: four other copies of the same illustrative pairing survived elsewhere in the tree, still carrying the disproven digest — `rfcs/RFC-ACDP-0005-discovery.md`'s §2.2 search-response example, both illustrative results in `schemas/conformance/vis-003-search-response-key.json`, and `schemas/json/acdp-common.schema.json`'s `lineage_id` schema annotation `examples[0]`.
+- GitHub issue #53 (filed by `acdp-verifier-py` during SPEC-15 triage) surfaced these leftover copies. All four are now corrected to the same independently-verified-correct derivation the 2026-07-05 entry already established, `lin:sha256:ca770dc5d7c41109753bd3d045c2b7bd4cf687ab9cd2552ff17a37bcecbd0810` (`sha256(utf8(ctx_id))` per RFC-ACDP-0001 §5.6/§5.11, re-verified byte-identical via both `python3 hashlib` and `shasum -a 256`).
+- `vis-003`'s two edited sites are inert illustrative context only — that fixture's actual assertions check field-name conformance (`matches` vs `results`) and diagnostics, never the `lineage_id` value itself — so this is a pure value substitution with no behavioral-assertion impact.
+- `scripts/check-consistency.py` gains a new narrowly-scoped guard (`check_no_disproven_digest`) that fails the `make consistency` gate if the full disproven digest reappears anywhere under `rfcs/`, `schemas/`, `examples/`, or `docs/`, so a partial-sweep erratum like this one cannot silently recur.
+
 ## v0.5.0 — README: canonical posture paragraph regains the 0.5.0 Draft line — 2026-09-05
 
 **Doc-only fix, no wire change.** No body field, schema `$id`, JCS rule, content-hash, or signature semantic changed.
