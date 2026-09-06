@@ -243,10 +243,11 @@ When `embedded` is present, it is a JSON object:
 |---|---|---|---|
 | `encoding` | string | Yes | One of `json`, `utf8`, `base64`. |
 | `content` | varies | Yes | The embedded content. For `json`, a JSON value. For `utf8` or `base64`, a string. |
+| `content_hash` | string | No | SHA-256 hash of the decoded `embedded.content` bytes, verified by registries at publish time per check 8 (§6.6). This is `embedded.content_hash` — a distinct, independent field from the DataRef-root `content_hash` defined in §6.1. Both are optional and MAY be present on the same `DataRef` simultaneously: the root `content_hash` (§6.1) is for consumer post-fetch integrity verification (its generic wording covers `location`-form data as much as `embedded`), while `embedded.content_hash` specifically feeds the publish-time check described below. |
 
 The decoded size of `embedded.content` MUST NOT exceed 65536 bytes (64 KB). Registries MUST reject contexts containing embedded data exceeding this limit with `embedded_too_large` (RFC-ACDP-0007).
 
-When `content_hash` is present on an embedded data reference, it is computed over the decoded bytes:
+When `embedded.content_hash` (not the DataRef-root `content_hash` of §6.1) is present on an embedded data reference, it is computed over the decoded bytes:
 - For `encoding: "base64"`: over the bytes after base64 decoding.
 - For `encoding: "utf8"`: over the bytes of the UTF-8 encoding.
 - For `encoding: "json"`: over the bytes of the JCS-canonicalized form.

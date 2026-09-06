@@ -29,6 +29,11 @@ individual validators cannot see:
      (literal mention, `fam-001..N` range, or `fam-*` wildcard) — checks 3/4
      only prove a fixture is referenced *somewhere*, so a fixture moved to the
      wrong profile in one file would otherwise pass.
+ 11. The disproven `lin:sha256:b14ccd2a…` digest (an illustrative-example
+     ctx_id/lineage_id pairing that a 2026-07-05 errata sweep missed four
+     copies of, see CHANGELOG.md) never reappears under rfcs/, schemas/,
+     examples/, or docs/ — a narrow regression guard, not a general hash
+     verifier.
 
 Exits 0 if all checks pass, 1 otherwise.
 """
@@ -45,6 +50,8 @@ CONFORMANCE = ROOT / "schemas" / "conformance"
 SCHEMAS = ROOT / "schemas" / "json"
 EXAMPLES = ROOT / "examples"
 REGISTRIES = ROOT / "registries"
+RFCS = ROOT / "rfcs"
+DOCS = ROOT / "docs"
 
 errors = []
 
@@ -386,6 +393,35 @@ def check_schema_ids():
             seen[sid] = path.name
 
 
+# ── Check 11: disproven digest regression guard ──────────────────────────────
+
+DISPROVEN_LINEAGE_DIGEST = "b14ccd2a8b34530309255db68c151a10689b6a82feb30aff9222d54fdd871720"
+
+
+def check_no_disproven_digest():
+    """The illustrative ctx_id acdp://registry.example.com/550e8400-e29b-41d4-
+    a716-446655440000 was, per a 2026-07-05 errata sweep (commit 390f2d3),
+    supposed to be repaired everywhere to pair with lin:sha256:ca770dc5…. That
+    sweep missed four copies still carrying the disproven lin:sha256:b14ccd2a…
+    value (see CHANGELOG.md, GitHub issue #53). This check fails loudly if the
+    full disproven digest ever reappears under rfcs/, schemas/, examples/, or
+    docs/, so a partial-sweep erratum like that one cannot silently recur."""
+    for base in (RFCS, SCHEMAS.parent, EXAMPLES, DOCS):
+        if not base.exists():
+            continue
+        for path in sorted(base.rglob("*")):
+            if not path.is_file():
+                continue
+            try:
+                text = path.read_text(errors="ignore")
+            except OSError:
+                continue
+            if DISPROVEN_LINEAGE_DIGEST in text:
+                err("disproven-digest",
+                    f"{path.relative_to(ROOT)}: contains the disproven digest "
+                    f"{DISPROVEN_LINEAGE_DIGEST!r} (lin:sha256:ca770dc5… is correct)")
+
+
 def main():
     profiles_json = json.loads((REGISTRIES / "profiles.json").read_text())
     families = set(profiles_json.get("fixture_families", {}))
@@ -405,6 +441,7 @@ def main():
     check_schema_ids()
     check_markdown_links()
     check_profile_placement(fixtures, profiles_json)
+    check_no_disproven_digest()
 
     if errors:
         print(f"✗ {len(errors)} consistency error(s):", file=sys.stderr)

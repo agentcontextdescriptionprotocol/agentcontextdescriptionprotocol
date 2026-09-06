@@ -49,7 +49,7 @@
       "type": "string",
       "pattern": "^lin:sha256:[0-9a-f]{64}$",
       "examples": [
-        "lin:sha256:b14ccd2a8b34530309255db68c151a10689b6a82feb30aff9222d54fdd871720"
+        "lin:sha256:ca770dc5d7c41109753bd3d045c2b7bd4cf687ab9cd2552ff17a37bcecbd0810"
       ]
     },
 
