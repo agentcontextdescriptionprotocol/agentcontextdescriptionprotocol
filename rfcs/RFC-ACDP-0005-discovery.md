@@ -65,7 +65,7 @@ The response object MUST use the key `matches` for the result array. The field n
   "matches": [
     {
       "ctx_id": "acdp://registry.example.com/550e8400-e29b-41d4-a716-446655440000",
-      "lineage_id": "lin:sha256:b14ccd2a8b34530309255db68c151a10689b6a82feb30aff9222d54fdd871720",
+      "lineage_id": "lin:sha256:ca770dc5d7c41109753bd3d045c2b7bd4cf687ab9cd2552ff17a37bcecbd0810",
       "agent_id": "did:web:agents.example.com:market-data-collector",
       "title": "BTC Price Snapshot",
       "summary": "BTC: $43,250.67 (+2.3%)",
@@ -185,6 +185,8 @@ A registry MUST apply the `anonymous_public_reads` rule to `total_estimate` with
 **Q2 — `private` in `derived_from` filter and other lineage queries:** A `private` context MUST NOT appear in any keyword-search result for any requester other than its `agent_id`, *including* responses to `derived_from=<ctx_id>` filter queries and any other lineage-discovery filter that may be added in the future. The `derived_from` filter is search (RFC-ACDP-0005 §2.4); search is strictly narrower than retrieval. Concretely: if a `private` context is derived from a `public` context that an audience member can search, querying `derived_from=<public_ctx_id>` MUST NOT surface the `private` derivative for that audience member. Audience members who learn the `ctx_id` out-of-band MAY retrieve it directly (RFC-ACDP-0002 §7).
 
 This rule MUST also be applied to `total_estimate` (RFC-ACDP-0005 §3): private contexts never count toward another DID's `total_estimate`, and registries MUST avoid leaking their existence via per-requester variance in the estimate.
+
+A registry that applies a lineage filter as a post-refinement MAY report an estimate that reflects the pre-refinement, requester-visible count; what §2.5.5 and §3 forbid is counting the private context itself, and varying the estimate by requester. Exactness after post-filtering is not required (§5).
 
 ---
 

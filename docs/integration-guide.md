@@ -148,7 +148,7 @@ If `verify` raises, the body is not authentically from `agent_id`.
 
 > **SSRF — DID resolution.** `signature.key_id` is producer-controlled, so `resolve_did_key` dereferences a `did:web` host taken verbatim from the body. The resolver MUST apply SSRF protection (RFC-ACDP-0008 §4.8): resolve the host, refuse if any resolved IP is in a private/loopback/link-local/IMDS range, pin the resolved IP for the connection, HTTPS-only, and cap redirects to the same authority. A URL-string check alone is **not** sufficient — DNS rebinding defeats it (RFC-ACDP-0006 §7.1). A producer DID that resolves to a forbidden target is treated as unverifiable.
 
-Steps 1–3 are the **`StrictV010`** verification profile (RFC-ACDP-0001 §9.2, §5.11): schema validation → `content_hash` recomputation → `did:web` resolution → signature verification → embedded `data_ref.content_hash` checks, returning on the first failure. It is the only verification mode valid for an `acdp-consumer` conformance claim. SDKs MAY expose `Diagnostic` (records every stage) or `UnsafeForTests` (skips steps) modes, but neither may be the default and neither is conformant.
+Steps 1–3 are the **`StrictV010`** verification profile (RFC-ACDP-0001 §9.2, §5.11): schema validation → `content_hash` recomputation → `did:web` resolution → signature verification → `embedded.content_hash` checks (a distinct, independent field from the DataRef-root `content_hash` of RFC-ACDP-0002 §6.1 — see §6.3), returning on the first failure. It is the only verification mode valid for an `acdp-consumer` conformance claim. SDKs MAY expose `Diagnostic` (records every stage) or `UnsafeForTests` (skips steps) modes, but neither may be the default and neither is conformant.
 
 ### Step 4: Use the context
 
@@ -270,7 +270,7 @@ A full wire-shape example of such a context is [examples/visibility/private-with
 |---|---|---|
 | `invalid_signature` | Signature didn't verify | Confirm you signed the bytes of the full `sha256:<hex>` string (not raw digest, not hex without prefix). Check `key_id` resolution and algorithm. |
 | `hash_mismatch` | Body `content_hash` ≠ recomputed | JCS implementation differs. Run `schemas/conformance/can-001-jcs-vector.json`. Common cause: stdlib `json.dumps` not normalizing `-0.0`; use the `jcs` PyPI package. |
-| `data_ref_hash_mismatch` | An embedded `data_ref.content_hash` ≠ the decoded `embedded.content` | Recompute the data-ref digest per the encoding (RFC-ACDP-0002 §6.3): `base64` → decoded bytes, `utf8` → UTF-8 bytes, `json` → JCS canonical bytes. DataRef-level failure — distinct from `hash_mismatch` (body-level) and `invalid_signature`. |
+| `data_ref_hash_mismatch` | `embedded.content_hash` (not the DataRef-root `content_hash`, RFC-ACDP-0002 §6.1) ≠ the decoded `embedded.content` | Recompute the data-ref digest per the encoding (RFC-ACDP-0002 §6.3): `base64` → decoded bytes, `utf8` → UTF-8 bytes, `json` → JCS canonical bytes. DataRef-level failure — distinct from `hash_mismatch` (body-level) and `invalid_signature`. |
 | `superseded_target` | Supersession constraints failed | Check `details.reason` — common values: `not_found`, `lineage_mismatch`, `version_mismatch`, `already_superseded`. |
 | `unsupported_algorithm` | You used a non-ed25519 algorithm | Either use ed25519 or check the registry's `supported_signature_algorithms`. |
 | `embedded_too_large` | Embedded data > 64 KB | Switch to `location` form. |
