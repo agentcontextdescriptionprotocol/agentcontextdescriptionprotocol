@@ -2,6 +2,14 @@
 
 All notable changes to ACDP are recorded here. ACDP follows the versioning policy in [VERSIONING.md](VERSIONING.md).
 
+## v0.1.0 — erratum: RFC-ACDP-0004 §2.1 binds the resolved ctx_id for direct retrieval — 2026-09-06
+
+**One cross-referencing NORMATIVE sentence, no wire change.** No body field, schema `$id`, JCS rule, content-hash, or signature semantic changed.
+
+- **The gap.** RFC-ACDP-0006 §4.1 step 7 (added by the 2026-09-05 erratum above) requires a cross-registry consumer to confirm `body.ctx_id` equals the requested `ctx_id`, since `ctx_id` is in the RFC-ACDP-0001 §5.7 registry-assigned exclusion set and so is covered by neither `content_hash` nor the producer signature. RFC-ACDP-0004 §2.1 (same-registry, direct `GET /contexts/{ctx_id}` retrieval) had the identical gap, since §4.1 step 4 delegates its actual fetch to this section but a consumer calling §2.1 directly — not via a §4.1 walk — had no normative requirement to bind the identity.
+- **The fix.** RFC-ACDP-0004 §2.1 gains one NORMATIVE sentence requiring the same `body.ctx_id`-equality check, cross-referencing RFC-ACDP-0006 §4.1 step 7 rather than duplicating its full rationale.
+- Closes GitHub issue #48, deferred out of #44's scope (`OQ-6`) as a defense-in-depth gap for direct-retrieval consumers, not a newly-discovered exploit path distinct from #44's.
+
 ## v0.1.0 — RFC-ACDP-0002 §6.3: disambiguate embedded.content_hash from the DataRef-root content_hash — 2026-09-05
 
 **Documentation/consistency fix, no wire change.** No body field, schema `$id`, JCS rule, content-hash computation, or signature semantic changed.
