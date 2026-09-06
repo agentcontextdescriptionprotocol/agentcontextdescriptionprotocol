@@ -57,6 +57,8 @@ A registry advertising the `acdp-registry-receipts` profile MUST include it; oth
 
 The `{ctx_id}` path parameter is the URL-encoded `acdp://...` URI. Implementations MAY also accept a path-style alternate (`/contexts/<authority>/<uuid>`) for ergonomics; if both forms are supported, they MUST resolve to the same context.
 
+**Bind the resolved identity (NORMATIVE).** A consumer retrieving directly via this endpoint MUST apply the same `body.ctx_id`-equality check RFC-ACDP-0006 §4.1 step 7 requires of the cross-registry walk (which delegates its actual fetch to this section) — `ctx_id` sits in the RFC-ACDP-0001 §5.7 registry-assigned exclusion set, so it is bound by neither the producer signature nor `content_hash`.
+
 ### 2.2 Body-only retrieval
 
 ```
